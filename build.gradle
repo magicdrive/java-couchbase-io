@@ -1,0 +1,14 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+def jdkVersion = 1.8
+sourceCompatibility = jdkVersion
+
+version = '1.0'
+
+repositories { mavenCentral() }
+
+dependencies {
+    compile 'com.couchbase.client:couchbase-client:1.4.1'
+    testCompile 'junit:junit:4.11'
+}
