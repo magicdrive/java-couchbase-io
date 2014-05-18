@@ -3,12 +3,18 @@ apply plugin: 'application'
 
 def jdkVersion = 1.8
 sourceCompatibility = jdkVersion
+targetCompatibility = jdkVersion
 
 version = '1.0'
 
 //mainClassName = 'net.magicd.io.kvs.couchbase.CouchBaseAIO'
 
 repositories { mavenCentral() }
+
+tasks.withType(Test) {
+    scanForTestClasses = false
+    include "**/*Test.class"
+}
 
 dependencies {
     compile 'com.couchbase.client:couchbase-client:1.4.1'

@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestCouchBaseAIO {
+public class CouchBaseAIOTest {
 
     @Test
     public void testGet() throws IOException {

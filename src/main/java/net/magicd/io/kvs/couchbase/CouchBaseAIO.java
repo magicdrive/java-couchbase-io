@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -22,15 +23,6 @@ public class CouchBaseAIO {
      */
     private static final List<URI> couchBaseEndPoints = new ArrayList<>();
 
-    static {
-        ((Runnable) () -> {
-            try {
-                couchBaseEndPoints.add(new URI("http://ubuntu-lts.local:8091/pools"));
-            } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
-        }).run();
-    }
 
     /**
      * the couchbase client entity
@@ -43,6 +35,12 @@ public class CouchBaseAIO {
      * @throws IOException
      */
     public CouchBaseAIO(String bucket, String password) throws IOException {
+        List<URI> couchBaseEndPoints = null;
+        try {
+            couchBaseEndPoints = Arrays.asList(new URI("http://ubuntu-lts.local:8091/pools"));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
         client = new CouchbaseClient(couchBaseEndPoints, bucket, password);
     }
 
