@@ -6,9 +6,12 @@ sourceCompatibility = jdkVersion
 
 version = '1.0'
 
+//mainClassName = 'net.magicd.io.kvs.couchbase.CouchBaseAIO'
+
 repositories { mavenCentral() }
 
 dependencies {
     compile 'com.couchbase.client:couchbase-client:1.4.1'
+    compile 'org.codehaus.jackson:jackson-core-asl:1.9.13'
     testCompile 'junit:junit:4.11'
 }

@@ -5,37 +5,78 @@ import com.couchbase.client.CouchbaseClient;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * A CouchBaseClient Wrapper.
+ *
+ * @author Hiroshi IKEGAMI
+ * @version 0.1
+ */
 public class CouchBaseAIO {
 
-    public static void main(String[] args)
-            throws URISyntaxException, IOException,
-                   ExecutionException, InterruptedException {
+    /**
+     * couchbase cluster
+     */
+    private static final List<URI> couchBaseEndPoints = new ArrayList<>();
 
-        // (Subset) of nodes in the cluster to establish a connection
-        List<URI> hosts = Arrays.asList(
-                new URI("http://127.0.0.1:8091/pools")
-        );
+    static {
+        ((Runnable) () -> {
+            try {
+                couchBaseEndPoints.add(new URI("http://ubuntu-lts.local:8091/pools"));
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        }).run();
+    }
 
-        // Name of the Bucket to connect to
-        String bucket = "default";
+    /**
+     * the couchbase client entity
+     */
+    private CouchbaseClient client;
 
-        // Password of the bucket (empty) string if none
-        String password = "";
+    /**
+     * default constructor.
+     *
+     * @throws IOException
+     */
+    public CouchBaseAIO(String bucket, String password) throws IOException {
+        client = new CouchbaseClient(couchBaseEndPoints, bucket, password);
+    }
 
-        // Connect to the Cluster
-        CouchbaseClient client = new CouchbaseClient(hosts, bucket, password);
+    /**
+     * destructor
+     *
+     * @throws Throwable
+     */
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            super.finalize();
+        } finally {
+            client.shutdown();
+        }
+    }
 
-        // Store a Document
-        client.set("my-first-document", "Hello Couchbase!").get();
+    /**
+     * @param key
+     * @param value
+     * @return
+     */
+    public boolean put(String key, String value) {
+        try {
+            return client.set(key, value).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-        // Retreive the Document and print it
-        System.out.println(client.get("my-first-document"));
-
-        // Shutting down properly
-        client.shutdown();
+    /**
+     * @param key
+     */
+    public Object get(String key) {
+        return client.get(key);
     }
 }
