@@ -5,7 +5,6 @@ import com.couchbase.client.CouchbaseClient;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -17,12 +16,6 @@ import java.util.concurrent.ExecutionException;
  * @version 0.1
  */
 public class CouchBaseAIO {
-
-    /**
-     * couchbase cluster
-     */
-    private static final List<URI> couchBaseEndPoints = new ArrayList<>();
-
 
     /**
      * the couchbase client entity
@@ -37,7 +30,9 @@ public class CouchBaseAIO {
     public CouchBaseAIO(String bucket, String password) throws IOException {
         List<URI> couchBaseEndPoints = null;
         try {
-            couchBaseEndPoints = Arrays.asList(new URI("http://ubuntu-lts.local:8091/pools"));
+            couchBaseEndPoints = Arrays.asList(
+                    new URI("http://ubuntu-lts.local:8091/pools")
+            );
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
@@ -59,6 +54,8 @@ public class CouchBaseAIO {
     }
 
     /**
+     * put
+     *
      * @param key
      * @param value
      * @return
@@ -72,9 +69,13 @@ public class CouchBaseAIO {
     }
 
     /**
+     * get
+     *
      * @param key
      */
     public Object get(String key) {
         return client.get(key);
     }
+
+
 }

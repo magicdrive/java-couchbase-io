@@ -1,23 +1,27 @@
 apply plugin: 'java'
 apply plugin: 'application'
 
-def jdkVersion = 1.8
+version = '0.1-SNAPSHOT'
+
+def jdkVersion = "1.6"
 sourceCompatibility = jdkVersion
 targetCompatibility = jdkVersion
 
-version = '1.0'
-
-//mainClassName = 'net.magicd.io.kvs.couchbase.CouchBaseAIO'
-
-repositories { mavenCentral() }
-
-tasks.withType(Test) {
-    scanForTestClasses = false
-    include "**/*Test.class"
+repositories {
+    mavenCentral()
+    maven { url "http://files.couchbase.com/maven2" }
 }
 
 dependencies {
+    // lombok
+    compile 'org.projectlombok:lombok:1.12.6'
+
     compile 'com.couchbase.client:couchbase-client:1.4.1'
     compile 'org.codehaus.jackson:jackson-core-asl:1.9.13'
+    compile 'org.jwat:jwat-gzip:1.0.1'
+
+    // test dependencies
+    testCompile 'org.couchbase.mock:CouchbaseMock:0.7-SNAPSHOT'
     testCompile 'junit:junit:4.11'
+    testCompile 'org.jyaml:jyaml:1.3'
 }
