@@ -3,7 +3,7 @@ apply plugin: 'application'
 
 version = '0.1-SNAPSHOT'
 
-def jdkVersion = "1.6"
+def jdkVersion = "1.7"
 sourceCompatibility = jdkVersion
 targetCompatibility = jdkVersion
 
@@ -13,12 +13,8 @@ repositories {
 }
 
 dependencies {
-    // lombok
-    compile 'org.projectlombok:lombok:1.12.6'
-
     compile 'com.couchbase.client:couchbase-client:1.4.1'
     compile 'org.codehaus.jackson:jackson-core-asl:1.9.13'
-    compile 'org.jwat:jwat-gzip:1.0.1'
 
     // test dependencies
     testCompile 'org.couchbase.mock:CouchbaseMock:0.7-SNAPSHOT'

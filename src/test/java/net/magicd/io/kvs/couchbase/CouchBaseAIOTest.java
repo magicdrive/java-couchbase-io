@@ -1,5 +1,6 @@
 package net.magicd.io.kvs.couchbase;
 
+import net.magicd.io.couchbase.CouchBaseAIO;
 import org.junit.Test;
 
 import java.io.IOException;

@@ -1,11 +1,11 @@
-package net.magicd.io.kvs.couchbase;
+package net.magicd.io.couchbase;
 
 import java.io.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Gzip class
+ * String Gzip Utility class
  */
 public class Gzip {
 
@@ -77,11 +77,10 @@ public class Gzip {
         }
     }
 
-
     /**
      * compress String by gzip
      *
-     * @see net.magicd.io.kvs.couchbase.Gzip#compressUTF_8(String)
+     * @see net.magicd.io.couchbase.Gzip#compressUTF_8(String)
      * @param notCompressedString
      * @return compressedGzipString
      */
@@ -92,7 +91,7 @@ public class Gzip {
     /**
      * decompress gzipString
      *
-     * @see net.magicd.io.kvs.couchbase.Gzip#decompressUTF_8(String)
+     * @see net.magicd.io.couchbase.Gzip#decompressUTF_8(String)
      * @param gzipString
      * @return decompressedGzipString
      */
@@ -103,7 +102,7 @@ public class Gzip {
     /**
      * compress String(UTF-8) by gzip
      *
-     * @see net.magicd.io.kvs.couchbase.Gzip#compress(String, String)
+     * @see net.magicd.io.couchbase.Gzip#compress(String, String)
      * @param notCompressedString
      * @return compressedGzipString
      */
@@ -114,7 +113,7 @@ public class Gzip {
     /**
      * decompress gzipString(UTF-8)
      *
-     * @see net.magicd.io.kvs.couchbase.Gzip#decompress(String, String)
+     * @see net.magicd.io.couchbase.Gzip#decompress(String, String)
      * @param gzipString
      * @return decompressedGzipString
      */
