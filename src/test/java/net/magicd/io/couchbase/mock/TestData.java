@@ -4,12 +4,42 @@ public class TestData {
     private int id;
     private String name;
 
-    public int getId() { return id; }
+    public String getGender() {
+        return gender;
+    }
 
-    public TestData setId(int id) { this.id = id; return this;}
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
 
-    public String getName() { return name; }
+    private String gender;
 
-    public TestData setName(String name) { this.name = name; return this; }
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    private int age;
+
+    public int getId() {
+        return id;
+    }
+
+    public TestData setId(int id) {
+        this.id = id;
+        return this;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public TestData setName(String name) {
+        this.name = name;
+        return this;
+    }
 }
 

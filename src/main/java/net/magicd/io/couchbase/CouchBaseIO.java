@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * A CouchBaseClient Wrapper.
  *
- * @author Hiroshi IKEGAMI
+ * @author Hiroshi IKEGAMI \<hiroshi.ikegami@magicdrive.jp\>
  * @version 0.1
  */
 public class CouchBaseIO {
@@ -46,7 +46,8 @@ public class CouchBaseIO {
      *
      * @throws IOException
      */
-    public CouchBaseIO(URI endpoint, String bucket, String password) throws IOException {
+    public CouchBaseIO(URI endpoint, String bucket, String password)
+            throws IOException {
         List<URI> couchBaseEndPoints = Arrays.asList(endpoint);
         this.client = new CouchbaseClient(couchBaseEndPoints, bucket, password);
     }
@@ -56,7 +57,8 @@ public class CouchBaseIO {
      *
      * @throws IOException
      */
-    public CouchBaseIO(URI[] endpoints, String bucket, String password) throws IOException {
+    public CouchBaseIO(URI[] endpoints, String bucket, String password)
+            throws IOException {
         List<URI> couchBaseEndPoints = Arrays.asList(endpoints);
         this.client = new CouchbaseClient(couchBaseEndPoints, bucket, password);
     }
@@ -66,7 +68,8 @@ public class CouchBaseIO {
      *
      * @throws IOException
      */
-    public CouchBaseIO(String endpoint, String bucket, String password) throws IOException {
+    public CouchBaseIO(String endpoint, String bucket, String password)
+            throws IOException {
         List<URI> couchBaseEndPoints;
         try {
             couchBaseEndPoints = Arrays.asList(new URI(endpoint));
@@ -82,7 +85,8 @@ public class CouchBaseIO {
      *
      * @throws IOException
      */
-    public CouchBaseIO(String[] endpoints, String bucket, String password) throws IOException {
+    public CouchBaseIO(String[] endpoints, String bucket, String password)
+            throws IOException {
         List<URI> couchBaseEndPoints = new ArrayList<>();
         try {
             for (String endpoint : endpoints) {
@@ -124,27 +128,27 @@ public class CouchBaseIO {
     }
 
     /**
-     *
      * @param key
      * @param ignored
      * @param <T>
      * @return ArrayList<(POJO class)>
      */
-    public <T> ArrayList<T> getMultiValue(String key, Class<T> ignored) throws IOException {
+    public <T> ArrayList<T> getMultiValueJSON(String key, Class<T> ignored)
+            throws IOException {
         try {
             String value = client.get(key).toString();
             ObjectMapper mapper = new ObjectMapper();
             ArrayList<T> data =
-                    mapper.readValue(value, new TypeReference<ArrayList<T>>() {});
+                    mapper.readValue(value, new TypeReference<ArrayList<T>>() {
+                    });
             return data;
         } catch (IOException e) {
             e.printStackTrace();
-            throw new IOException();
+            return null;
         }
     }
 
     /**
-     *
      * @param key
      * @param ignored
      * @param <T>
@@ -153,7 +157,6 @@ public class CouchBaseIO {
     public <T> T get(String key, Class<T> ignored) {
         try {
             String value = client.get(key).toString();
-            System.err.println(ignored.getCanonicalName());
             ObjectMapper mapper = new ObjectMapper();
             T data =
                     mapper.readValue(value, ignored);
@@ -161,6 +164,27 @@ public class CouchBaseIO {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    /**
+     *
+     * @param key
+     * @param ignored
+     * @param jsonType
+     * @param <T>
+     * @return
+     * @throws IOException
+     */
+    public <T> Object get(String key, Class<T> ignored, JsonType jsonType)
+            throws IOException {
+        switch (jsonType) {
+            case MULTI:
+                return getMultiValueJSON(key, ignored);
+            case SINGLE:
+                return get(key, ignored);
+            default:
+                throw new RuntimeException("the jsonType" + jsonType.toString() + " is invalid.");
         }
     }
 }
