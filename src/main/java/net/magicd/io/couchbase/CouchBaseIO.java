@@ -1,8 +1,8 @@
 package net.magicd.io.couchbase;
 
 import com.couchbase.client.CouchbaseClient;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,9 +18,9 @@ import java.util.concurrent.ExecutionException;
  * @author Hiroshi IKEGAMI
  * @version 0.1
  */
-public class CouchBaseAIO {
+public class CouchBaseIO {
 
-    public enum Format{ JSON,STRING }
+    public enum JsonType {MULTI, SINGLE}
 
     /**
      * the couchbase client entity
@@ -37,14 +37,16 @@ public class CouchBaseAIO {
      *
      * @return bucketName
      */
-    public String getBucketName() { return this.bucketName; }
+    public String getBucketName() {
+        return this.bucketName;
+    }
 
     /**
      * constructor.
      *
      * @throws IOException
      */
-    public CouchBaseAIO(URI endpoint, String bucket, String password) throws IOException {
+    public CouchBaseIO(URI endpoint, String bucket, String password) throws IOException {
         List<URI> couchBaseEndPoints = Arrays.asList(endpoint);
         this.client = new CouchbaseClient(couchBaseEndPoints, bucket, password);
     }
@@ -54,7 +56,7 @@ public class CouchBaseAIO {
      *
      * @throws IOException
      */
-    public CouchBaseAIO(URI[] endpoints, String bucket, String password) throws IOException {
+    public CouchBaseIO(URI[] endpoints, String bucket, String password) throws IOException {
         List<URI> couchBaseEndPoints = Arrays.asList(endpoints);
         this.client = new CouchbaseClient(couchBaseEndPoints, bucket, password);
     }
@@ -64,7 +66,7 @@ public class CouchBaseAIO {
      *
      * @throws IOException
      */
-    public CouchBaseAIO(String endpoint, String bucket, String password) throws IOException {
+    public CouchBaseIO(String endpoint, String bucket, String password) throws IOException {
         List<URI> couchBaseEndPoints;
         try {
             couchBaseEndPoints = Arrays.asList(new URI(endpoint));
@@ -80,7 +82,7 @@ public class CouchBaseAIO {
      *
      * @throws IOException
      */
-    public CouchBaseAIO(String[] endpoints, String bucket, String password) throws IOException {
+    public CouchBaseIO(String[] endpoints, String bucket, String password) throws IOException {
         List<URI> couchBaseEndPoints = new ArrayList<>();
         try {
             for (String endpoint : endpoints) {
@@ -112,64 +114,54 @@ public class CouchBaseAIO {
      *
      * @param key
      */
-    public boolean put(String key, String str) throws IOException {
+    public <T> boolean put(String key, T value) throws IOException {
         try {
-            return client.set(key, str).get();
+            ObjectMapper mapper = new ObjectMapper();
+            return client.set(key, mapper.writeValueAsString(value)).get();
         } catch (InterruptedException | ExecutionException e) {
             throw new IOException(e);
         }
     }
 
     /**
-     * Get valueObj via couchbase.
      *
      * @param key
-     * @return value
+     * @param ignored
+     * @param <T>
+     * @return ArrayList<(POJO class)>
      */
-    public JSONObject get(String key) throws IOException {
+    public <T> ArrayList<T> getMultiValue(String key, Class<T> ignored) throws IOException {
         try {
-            return new JSONObject(client.get(key).toString());
-        } catch (JSONException e) {
+            String value = client.get(key).toString();
+            ObjectMapper mapper = new ObjectMapper();
+            ArrayList<T> data =
+                    mapper.readValue(value, new TypeReference<ArrayList<T>>() {});
+            return data;
+        } catch (IOException e) {
             e.printStackTrace();
-            throw new IOException(e);
+            throw new IOException();
         }
     }
 
     /**
-     * get String via couchbase
      *
      * @param key
-     * @return value
+     * @param ignored
+     * @param <T>
+     * @return ArrayList<(POJO class)>
      */
-    public String getString(String key) { return client.get(key).toString(); }
-
-    /**
-     * Get valueObj via couchbase.
-     *
-     * @param key
-     * @return value
-     */
-    public <T> T get(String key, Format format) throws IOException {
-        Object value = client.get(key);
-        Object result;
-        switch (format) {
-            case JSON:
-                try {
-                    result = new JSONObject(value.toString());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    throw new IOException(e);
-                }
-                break;
-            case STRING:
-                result = value.toString();
-                break;
-            default:
-                throw new IOException(
-                        String.format( "Format \"%s\" not supported.", format.toString() )
-                );
+    public <T> T get(String key, Class<T> ignored) {
+        try {
+            String value = client.get(key).toString();
+            System.err.println(ignored.getCanonicalName());
+            ObjectMapper mapper = new ObjectMapper();
+            T data =
+                    mapper.readValue(value, ignored);
+            return data;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-        return (T) result;
     }
 }
 

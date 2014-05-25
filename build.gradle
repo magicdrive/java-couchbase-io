@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
     compile 'com.couchbase.client:couchbase-client:1.4.1'
-    compile 'org.codehaus.jackson:jackson-core-asl:1.9.13'
+    compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
 
     // test dependencies
     testCompile 'org.couchbase.mock:CouchbaseMock:0.7-SNAPSHOT'
