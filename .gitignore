@@ -24,10 +24,9 @@ Icon
 ### gradle
 # Exclude Folder List #
 .gradle/
-build/
 .class
-!build/libs
-
+build/*
+!build/libs/
 
 ### intellij
 *.iml
@@ -56,10 +55,5 @@ local.properties
 # Locally stored "Eclipse launch configurations"
 *.launch
 
-# CDT-specific
-.cproject
-
-# PDT-specific
-.buildpath
 
 
