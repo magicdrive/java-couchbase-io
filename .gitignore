@@ -26,6 +26,7 @@ Icon
 .gradle/
 build/
 .class
+!build/libs
 
 
 ### intellij
@@ -62,4 +63,3 @@ local.properties
 .buildpath
 
 
-Have appended /Users/hiroshi_ikegami/project/git/couchbase-aio/.gitignore
