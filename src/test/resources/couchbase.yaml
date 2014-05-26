@@ -1,10 +1,7 @@
 # couchbase endpoint definition
-
---
-couchbase:
   endpoint:
-    protcol: "https"
+    protocol: "http"
     host: "localhost"
     port: "8091"
-    path: "/pools"
+    path: "/mock"
 

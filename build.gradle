@@ -3,7 +3,7 @@ apply plugin: 'application'
 
 version = '0.1-SNAPSHOT'
 
-def jdkVersion = "1.7"
+def jdkVersion = "1.8"
 sourceCompatibility = jdkVersion
 targetCompatibility = jdkVersion
 
