@@ -28,9 +28,15 @@ public class CouchBaseIO {
     protected CouchbaseClient client;
 
     /**
-     *
+     * well shutdowned?
      */
-    private boolean isShutDown = false;
+    private boolean hasBeenShutDown = false;
+
+    /**
+     *
+     * @return
+     */
+    public boolean chekShutDownAlready() { return this.hasBeenShutDown; }
 
     /**
      * couchbase bucketName
@@ -114,14 +120,17 @@ public class CouchBaseIO {
         try {
             super.finalize();
         } finally {
-            if (!isShutDown) { client.shutdown(); }
+            if (!chekShutDownAlready()) { shutdown(); }
         }
     }
 
     /**
      * shutdown client
      */
-    public void shutdown() { client.shutdown(); }
+    public void shutdown() {
+        client.shutdown();
+        this.hasBeenShutDown = true;
+    }
 
     /**
      * Put java.lang.Object instance into couchbase.
@@ -199,5 +208,6 @@ public class CouchBaseIO {
                 throw new RuntimeException("the jsonType" + jsonType.toString() + " is invalid.");
         }
     }
+
 }
 

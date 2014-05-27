@@ -6,6 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -21,38 +23,51 @@ public class CouchBaseIOTest {
         System.err.println(obj.toString());
     }
 
-    @Before
-    public void init() {
-
+    /**
+     * @return couchBaseServerURL
+     */
+    public String getCouchBaseServerURL() {
         try {
             byte[] fileContentBytes = Files.readAllBytes(
                     Paths.get(
                             getClass().getClassLoader().getResource("couchbase.yaml").getPath()
                     )
             );
+
             String fileContentStr = new String(fileContentBytes, StandardCharsets.UTF_8);
 
-
-            Map<String, String> config = (Map<String, String>) (
+            Map config = (Map) (
                     (Map) Yaml.load(fileContentStr)
             ).get("endpoint");
 
-            String protocol = config.get("protocol"),
-                   host = config.get("host"),
-                   port = config.get("port"),
-                   path = config.get("path");
+            String protocol = config.get("protocol").toString(),
+                    host = config.get("host").toString(),
+                    port = config.get("port").toString(),
+                    path = config.get("path").toString();
 
-            io = new CouchBaseIO(
-                    String.format("%s://%s:%s%s", protocol, host, port, path),
-                    "default",
-                    ""
-            );
+            return String.format("%s://%s:%d%s", protocol, host, new Integer(port), path);
         } catch (IOException e) {
             e.printStackTrace();
-            throw new RuntimeException("specified url not available.");
+            throw new RuntimeException("test/resources/couchbase.yaml load error.", e);
         }
     }
 
+    /**
+     *
+     */
+    @Before
+    public void init() {
+        try {
+            io = new CouchBaseIO(getCouchBaseServerURL(), "default", "");
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("specified url not available.", e);
+        }
+    }
+
+    /**
+     * @throws IOException
+     */
     @Test
     public void testGet() throws IOException {
         TestData td = new TestData() {
@@ -68,6 +83,39 @@ public class CouchBaseIOTest {
         TestData result = io.get("foo", TestData.class);
         assertEquals(td.getId(), result.getId());
         assertEquals(td.getName(), result.getName());
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void testShutdown() {
+        io.shutdown();
+        assertEquals(io.chekShutDownAlready(), true);
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void constructorTest() {
+        final String serverUrl = getCouchBaseServerURL();
+        final String bucket = "default";
+        final String passwd = "";
+        try {
+            for (CouchBaseIO v : new CouchBaseIO[]{
+                    new CouchBaseIO(serverUrl, bucket, passwd),
+                    new CouchBaseIO(new URI(serverUrl), bucket, passwd),
+                    new CouchBaseIO(new URI[]{new URI(serverUrl)}, bucket, passwd)
+            }) {
+                assertEquals(v.chekShutDownAlready(), false);
+                v.shutdown();
+                assertEquals(v.chekShutDownAlready(), true);
+            }
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 }
 
