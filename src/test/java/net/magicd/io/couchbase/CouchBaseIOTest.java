@@ -19,8 +19,10 @@ public class CouchBaseIOTest {
 
     private CouchBaseIO io;
 
-    private static void p(Object obj) {
-        System.err.println(obj.toString());
+    private static void p(Object[] objs) {
+        for (Object obj : objs) {
+            System.err.println(obj.toString());
+        }
     }
 
     /**
