@@ -28,6 +28,11 @@ public class CouchBaseIO {
     protected CouchbaseClient client;
 
     /**
+     *
+     */
+    private boolean isShutDown = false;
+
+    /**
      * couchbase bucketName
      */
     protected String bucketName;
@@ -109,9 +114,14 @@ public class CouchBaseIO {
         try {
             super.finalize();
         } finally {
-            client.shutdown();
+            if (!isShutDown) { client.shutdown(); }
         }
     }
+
+    /**
+     * shutdown client
+     */
+    public void shutdown() { client.shutdown(); }
 
     /**
      * Put java.lang.Object instance into couchbase.
@@ -128,6 +138,7 @@ public class CouchBaseIO {
     }
 
     /**
+     *
      * @param key
      * @param ignored
      * @param <T>
@@ -149,6 +160,7 @@ public class CouchBaseIO {
     }
 
     /**
+     *
      * @param key
      * @param ignored
      * @param <T>
