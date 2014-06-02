@@ -3,7 +3,7 @@ apply plugin: 'application'
 
 version = '0.1-SNAPSHOT'
 
-def jdkVersion = "1.8"
+def jdkVersion = "1.7"
 sourceCompatibility = jdkVersion
 targetCompatibility = jdkVersion
 
@@ -15,6 +15,7 @@ repositories {
 dependencies {
     compile 'com.couchbase.client:couchbase-client:1.4.1'
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
+    compile 'org.anarres.lzo:lzo-core:1.0.0'
 
     // test dependencies
     testCompile 'org.couchbase.mock:CouchbaseMock:0.7-SNAPSHOT'

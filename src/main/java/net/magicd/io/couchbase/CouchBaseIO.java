@@ -1,6 +1,7 @@
 package net.magicd.io.couchbase;
 
 import com.couchbase.client.CouchbaseClient;
+import net.magicd.io.couchbase.compress.Gzip;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
@@ -140,7 +141,7 @@ public class CouchBaseIO {
     public <T> boolean put(String key, T value) throws IOException {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            return client.set(key, mapper.writeValueAsString(value)).get();
+            return client.set(key, Gzip.compress(mapper.writeValueAsString(value), "UTF-8")).get();
         } catch (InterruptedException | ExecutionException e) {
             throw new IOException(e);
         }
