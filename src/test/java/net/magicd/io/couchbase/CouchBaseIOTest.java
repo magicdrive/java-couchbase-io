@@ -82,9 +82,9 @@ public class CouchBaseIOTest {
             }
         }.init();
         io.put("foo", td);
-        //TestData result = io.get("foo", TestData.class);
-        //assertEquals(td.getId(), result.getId());
-        //assertEquals(td.getName(), result.getName());
+        TestData result = io.get("foo", TestData.class);
+        assertEquals(td.getId(), result.getId());
+        assertEquals(td.getName(), result.getName());
     }
 
     /**
@@ -93,7 +93,7 @@ public class CouchBaseIOTest {
     @Test
     public void testShutdown() {
         io.shutdown();
-        assertEquals(io.chekShutDownAlready(), true);
+        assertEquals(io.isHasBeenShutDown(), true);
     }
 
     /**
@@ -110,9 +110,9 @@ public class CouchBaseIOTest {
                     new CouchBaseIO(new URI(serverUrl), bucket, passwd),
                     new CouchBaseIO(new URI[]{new URI(serverUrl)}, bucket, passwd)
             }) {
-                assertEquals(v.chekShutDownAlready(), false);
+                assertEquals(v.isHasBeenShutDown(), false);
                 v.shutdown();
-                assertEquals(v.chekShutDownAlready(), true);
+                assertEquals(v.isHasBeenShutDown(), true);
             }
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();

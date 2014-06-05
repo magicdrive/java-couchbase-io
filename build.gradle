@@ -9,16 +9,15 @@ targetCompatibility = jdkVersion
 
 repositories {
     mavenCentral()
-    maven { url "http://files.couchbase.com/maven2" }
 }
 
 dependencies {
     compile 'com.couchbase.client:couchbase-client:1.4.1'
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
     compile 'org.anarres.lzo:lzo-core:1.0.0'
+    compile 'org.projectlombok:lombok:1.14.0'
 
     // test dependencies
-    testCompile 'org.couchbase.mock:CouchbaseMock:0.7-SNAPSHOT'
     testCompile 'junit:junit:4.11'
     testCompile 'org.jyaml:jyaml:1.3'
 }

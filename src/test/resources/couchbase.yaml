@@ -1,7 +1,7 @@
 # couchbase endpoint definition
   endpoint:
     protocol: "http"
-    host: "sp5-u2.office.spacyz.com"
+    host: "localhost"
     port: "8091"
     path: "/pools"
 

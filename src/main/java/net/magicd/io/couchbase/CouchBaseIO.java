@@ -1,9 +1,9 @@
 package net.magicd.io.couchbase;
 
 import com.couchbase.client.CouchbaseClient;
-import net.magicd.io.couchbase.compress.Gzip;
+import lombok.Getter;
+import net.magicd.io.couchbase.compress.Lzo;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 
 import java.io.IOException;
 import java.net.URI;
@@ -31,27 +31,14 @@ public class CouchBaseIO {
     /**
      * well shutdowned?
      */
+    @Getter
     private boolean hasBeenShutDown = false;
-
-    /**
-     *
-     * @return
-     */
-    public boolean chekShutDownAlready() { return this.hasBeenShutDown; }
 
     /**
      * couchbase bucketName
      */
+    @Getter
     protected String bucketName;
-
-    /**
-     * getter: bucketName
-     *
-     * @return bucketName
-     */
-    public String getBucketName() {
-        return this.bucketName;
-    }
 
     /**
      * constructor.
@@ -121,7 +108,7 @@ public class CouchBaseIO {
         try {
             super.finalize();
         } finally {
-            if (!chekShutDownAlready()) { shutdown(); }
+            if (!isHasBeenShutDown()) { shutdown(); }
         }
     }
 
@@ -141,47 +128,25 @@ public class CouchBaseIO {
     public <T> boolean put(String key, T value) throws IOException {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            return client.set(key, Gzip.compress(mapper.writeValueAsString(value), "UTF-8")).get();
+            return client.set(
+                    convertKey(key), Lzo.compress( mapper.writeValueAsString(value) )
+            ).get();
         } catch (InterruptedException | ExecutionException e) {
             throw new IOException(e);
         }
     }
 
     /**
-     *
      * @param key
-     * @param ignored
+     * @param klazz
      * @param <T>
      * @return ArrayList<(POJO class)>
      */
-    public <T> ArrayList<T> getMultiValueJSON(String key, Class<T> ignored)
-            throws IOException {
+    public <T> T get(String key, Class<T> klazz) {
         try {
-            String value = client.get(key).toString();
+            String value = Lzo.decompress((byte[])client.get(convertKey(key)));
             ObjectMapper mapper = new ObjectMapper();
-            ArrayList<T> data =
-                    mapper.readValue(value, new TypeReference<ArrayList<T>>() {
-                    });
-            return data;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     *
-     * @param key
-     * @param ignored
-     * @param <T>
-     * @return ArrayList<(POJO class)>
-     */
-    public <T> T get(String key, Class<T> ignored) {
-        try {
-            String value = client.get(key).toString();
-            ObjectMapper mapper = new ObjectMapper();
-            T data =
-                    mapper.readValue(value, ignored);
+            T data = mapper.readValue(Lzo.decompress((byte[])client.get(convertKey(key))), klazz);
             return data;
         } catch (Exception e) {
             e.printStackTrace();
@@ -189,26 +154,12 @@ public class CouchBaseIO {
         }
     }
 
+
     /**
-     *
      * @param key
-     * @param ignored
-     * @param jsonType
-     * @param <T>
      * @return
-     * @throws IOException
      */
-    public <T> Object get(String key, Class<T> ignored, JsonType jsonType)
-            throws IOException {
-        switch (jsonType) {
-            case MULTI:
-                return getMultiValueJSON(key, ignored);
-            case SINGLE:
-                return get(key, ignored);
-            default:
-                throw new RuntimeException("the jsonType" + jsonType.toString() + " is invalid.");
-        }
-    }
+    private String convertKey(String key) { return key+Lzo.getExtensionStr(); }
 
 }
 
