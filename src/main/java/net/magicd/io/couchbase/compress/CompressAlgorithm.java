@@ -13,34 +13,10 @@ public interface CompressAlgorithm {
 
     /**
      *
-     * @param encoding
-     */
-    public void setDeaultEncoding(String encoding);
-
-    /**
-     *
-     * @param notCompressedStr
-     * @param encoding
-     * @return compressedByteArray
-     */
-    public byte[] compress(String notCompressedStr, String encoding) ;
-
-    /**
-     *
-     * @param compressedByteArray
-     * @param encoding
-     * @return decompressedStr
-     */
-    public String decompress(byte[] compressedByteArray, String encoding) ;
-
-
-
-    /**
-     *
      * @param notCompressedStr
      * @return compressedByteArray
      */
-    public byte[] compress(String notCompressedStr);
+    public byte[] compress(String notCompressedStr) throws IOException;
 
 
     /**
@@ -49,5 +25,18 @@ public interface CompressAlgorithm {
      * @return decompressedStr
      */
     public String decompress(byte[] compressedByteArray) throws IOException;
+
+
+    /**
+     *
+     * @return
+     */
+    public String getAlgorithmName();
+
+    /**
+     *
+     * @return
+     */
+    public String getExtensionStr();
 
 }

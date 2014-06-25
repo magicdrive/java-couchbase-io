@@ -8,6 +8,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +23,12 @@ import java.util.concurrent.ExecutionException;
  */
 public class CouchBaseIO {
 
-    public enum JsonType {MULTI, SINGLE}
+    /**
+     *
+     */
+    public enum CompressMode {
+        LZO, GZIP
+    }
 
     /**
      * the couchbase client entity
@@ -29,7 +36,7 @@ public class CouchBaseIO {
     protected CouchbaseClient client;
 
     /**
-     * well shutdowned?
+     * well shutdown?
      */
     @Getter
     private boolean hasBeenShutDown = false;
@@ -73,7 +80,6 @@ public class CouchBaseIO {
         try {
             couchBaseEndPoints = Arrays.asList(new URI(endpoint));
         } catch (URISyntaxException e) {
-            e.printStackTrace();
             throw new IOException(e);
         }
         this.client = new CouchbaseClient(couchBaseEndPoints, bucket, password);
@@ -84,7 +90,7 @@ public class CouchBaseIO {
      *
      * @throws IOException
      */
-    public CouchBaseIO(String[] endpoints, String bucket, String password)
+    public CouchBaseIO(List<String> endpoints, String bucket, String password)
             throws IOException {
         List<URI> couchBaseEndPoints = new ArrayList<>();
         try {
@@ -92,7 +98,6 @@ public class CouchBaseIO {
                 couchBaseEndPoints.add(new URI(endpoint));
             }
         } catch (URISyntaxException e) {
-            e.printStackTrace();
             throw new IOException(e);
         }
         this.client = new CouchbaseClient(couchBaseEndPoints, bucket, password);
@@ -108,7 +113,9 @@ public class CouchBaseIO {
         try {
             super.finalize();
         } finally {
-            if (!isHasBeenShutDown()) { shutdown(); }
+            if (!isHasBeenShutDown()) {
+                shutdown();
+            }
         }
     }
 
@@ -125,15 +132,24 @@ public class CouchBaseIO {
      *
      * @param key
      */
-    public <T> boolean put(String key, T value) throws IOException {
+    public <T> boolean put(String key, Charset charset, T pojoInstance) throws IOException {
         try {
             ObjectMapper mapper = new ObjectMapper();
             return client.set(
-                    convertKey(key), Lzo.compress( mapper.writeValueAsString(value) )
+                    convertKey(key), new Lzo(charset).compress(mapper.writeValueAsString(pojoInstance))
             ).get();
         } catch (InterruptedException | ExecutionException e) {
             throw new IOException(e);
         }
+    }
+
+    /**
+     * Put java.lang.Object instance into couchbase.
+     *
+     * @param key
+     */
+    public <T> boolean put(String key, T pojoInstance) throws IOException {
+        return  put(key, StandardCharsets.UTF_8, pojoInstance);
     }
 
     /**
@@ -142,24 +158,30 @@ public class CouchBaseIO {
      * @param <T>
      * @return ArrayList<(POJO class)>
      */
-    public <T> T get(String key, Class<T> klazz) {
-        try {
-            String value = Lzo.decompress((byte[])client.get(convertKey(key)));
-            ObjectMapper mapper = new ObjectMapper();
-            T data = mapper.readValue(Lzo.decompress((byte[])client.get(convertKey(key))), klazz);
-            return data;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+    public <T> T get(String key, Class<T> klazz) throws IOException {
+        return get(key, StandardCharsets.UTF_8, klazz);
     }
 
+    /**
+     * @param key
+     * @param klazz
+     * @param <T>
+     * @return ArrayList<(POJO class)>
+     */
+    public <T> T get(String key, Charset charSet, Class<T> klazz) throws IOException {
+        String value = new Lzo(charSet).decompress((byte[]) client.get(convertKey(key)));
+        ObjectMapper mapper = new ObjectMapper();
+        T data = mapper.readValue(value, klazz);
+        return data;
+    }
 
     /**
      * @param key
      * @return
      */
-    private String convertKey(String key) { return key+Lzo.getExtensionStr(); }
+    private static String convertKey(String key) {
+        return key + new Lzo().getExtensionStr();
+    }
 
 }
 

@@ -9,41 +9,63 @@ import org.anarres.lzo.LzopOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * LZO compressor
  *
  * @author Hiroshi IKEGAMI \<hiroshi.ikegami@magicdrive.jp\>
  */
-public class Lzo {
+public class Lzo implements CompressAlgorithm {
 
-    /** buffer size */
-    private static final int DEFAULT_BUFFER_SIZE = 4096;
+    /**
+     * buffer size
+     */
+    private static final int bufferSize = 4096;
 
-    /** algorithmName */
+    /**
+     * algorithmName
+     */
     @Getter
-    private static final String algorithmName = "lzo";
+    private final String algorithmName = "lzo";
 
-    /** extensionStr */
+    /**
+     * extensionStr
+     */
     @Getter
-    private static final String extensionStr = ".lzo";
+    private final String extensionStr = ".lzo";
 
+    /**
+     * encoding
+     */
+    private Charset charset = StandardCharsets.UTF_8;
 
-    /** constructor */
-    private Lzo() {}
+    /**
+     * constructor
+     */
+    public Lzo(Charset charset) {
+        this.charset = charset;
+    }
+
+    /**
+     * constructor
+     */
+    public Lzo() {
+    }
 
     /**
      * @param value
      * @return
      * @throws IOException
      */
-    public static byte[] compress(String value) throws IOException {
+    public byte[] compress(String value) throws IOException {
         LzoCompressor compressor = LzoLibrary.getInstance().newCompressor(null, null);
-        byte[] row_data = value.getBytes();
+        byte[] row_data = value.getBytes(this.charset);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         LzopOutputStream lzopOutputStream = new LzopOutputStream(
-                byteArrayOutputStream, compressor, DEFAULT_BUFFER_SIZE
+                byteArrayOutputStream, compressor, bufferSize
         );
         lzopOutputStream.write(row_data);
         if (lzopOutputStream != null) {
@@ -57,14 +79,14 @@ public class Lzo {
      * @return
      * @throws IOException
      */
-    public static String decompress(byte[] value) throws IOException {
-        ByteArrayInputStream lzo_fin = new ByteArrayInputStream(value);
-        LzopInputStream lzo_zin = new LzopInputStream(lzo_fin);
+    public String decompress(byte[] value) throws IOException {
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(value);
+        LzopInputStream lzopInputStream = new LzopInputStream(byteArrayInputStream);
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         int ir;
         byte[] data = new byte[16384];
 
-        while ((ir = lzo_zin.read(data, 0, data.length)) != -1) {
+        while ((ir = lzopInputStream.read(data, 0, data.length)) != -1) {
             buffer.write(data, 0, ir);
         }
         buffer.flush();

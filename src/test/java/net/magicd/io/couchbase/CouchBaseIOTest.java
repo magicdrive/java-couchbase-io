@@ -1,9 +1,9 @@
 package net.magicd.io.couchbase;
 
 import net.magicd.io.couchbase.mock.TestData;
-import org.ho.yaml.Yaml;
 import org.junit.Before;
 import org.junit.Test;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.net.URI;
@@ -19,6 +19,8 @@ public class CouchBaseIOTest {
 
     private CouchBaseIO io;
 
+    private static final String filename = "couchbase.yaml";
+
     private static void p(Object[] objs) {
         for (Object obj : objs) {
             System.err.println(obj.toString());
@@ -32,14 +34,14 @@ public class CouchBaseIOTest {
         try {
             byte[] fileContentBytes = Files.readAllBytes(
                     Paths.get(
-                            getClass().getClassLoader().getResource("couchbase.yaml").getPath()
+                            getClass().getClassLoader().getResource(filename).getPath()
                     )
             );
 
             String fileContentStr = new String(fileContentBytes, StandardCharsets.UTF_8);
 
             Map config = (Map) (
-                    (Map) Yaml.load(fileContentStr)
+                    (Map) new Yaml().load(fileContentStr)
             ).get("endpoint");
 
             String protocol = config.get("protocol").toString(),

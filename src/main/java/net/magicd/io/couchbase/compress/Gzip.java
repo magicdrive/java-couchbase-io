@@ -1,80 +1,87 @@
 package net.magicd.io.couchbase.compress;
 
+import lombok.Getter;
+
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
  * Gzip class
  */
-public class Gzip {
+public class Gzip implements CompressAlgorithm {
+
+    /**
+     * algorithmName
+     */
+    @Getter
+    private final String algorithmName = "gzip";
+
+    /**
+     * extensionStr
+     */
+    @Getter
+    private final String extensionStr = ".gz";
+
+    /**
+     * charSetEncoding
+     */
+    private Charset charset = StandardCharsets.UTF_8;
+
+    /**
+     * constructor
+     */
+    public Gzip() {
+    }
+
+    /**
+     * constructor
+     */
+    public Gzip(Charset charset) {
+        this.charset = charset;
+    }
 
     /**
      * compress String by gzip
      *
      * @param notCompressedStr
-     * @param encoding
      * @return compressedGzipString
      */
-    public static byte[] compress(String notCompressedStr, String encoding) {
-        try {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
+    @Override
+    public byte[] compress(String notCompressedStr) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
 
-            byte[] decompressedBytes = notCompressedStr.getBytes();
+        byte[] decompressedBytes = notCompressedStr.getBytes(this.charset);
 
-            gzipOutputStream.write(decompressedBytes, 0, decompressedBytes.length);
-            gzipOutputStream.close();
+        gzipOutputStream.write(decompressedBytes, 0, decompressedBytes.length);
+        gzipOutputStream.close();
 
-            return byteArrayOutputStream.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
+        return byteArrayOutputStream.toByteArray();
     }
 
     /**
      * decompress gzipString
      *
-     * @param gzipString
+     * @param compressedByteArray
      * @return decompressedGzipString
      */
-    public static String decompress(String gzipString, String encoding) {
-        try {
-            GZIPInputStream gzipInputStream = new GZIPInputStream(
-                    new ByteArrayInputStream(gzipString.getBytes(encoding))
-            );
-            OutputStream out = new ByteArrayOutputStream();
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = gzipInputStream.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            gzipInputStream.close();
-            out.close();
-
-            return out.toString();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+    @Override
+    public String decompress(byte[] compressedByteArray) throws IOException {
+        GZIPInputStream gzipInputStream = new GZIPInputStream(
+                new ByteArrayInputStream(compressedByteArray)
+        );
+        OutputStream out = new ByteArrayOutputStream();
+        byte[] buf = new byte[16384];
+        int len;
+        while ((len = gzipInputStream.read(buf)) > 0) {
+            out.write(buf, 0, len);
         }
-    }
+        gzipInputStream.close();
+        out.close();
 
-    /**
-     * convert byte[] to java.lang.String
-     *
-     * @param bytes
-     * @param encoding
-     * @return string
-     */
-    private static String byteArrayToString(byte[] bytes, String encoding) {
-        try {
-            return new String(bytes, encoding);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
+        return out.toString();
     }
-
 }
