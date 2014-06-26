@@ -10,7 +10,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 /**
  * LZO compressor
@@ -36,17 +35,6 @@ public class Lzo implements CompressAlgorithm {
     @Getter
     private final String extensionStr = ".lzo";
 
-    /**
-     * encoding
-     */
-    private Charset charset = StandardCharsets.UTF_8;
-
-    /**
-     * constructor
-     */
-    public Lzo(Charset charset) {
-        this.charset = charset;
-    }
 
     /**
      * constructor
@@ -60,8 +48,30 @@ public class Lzo implements CompressAlgorithm {
      * @throws IOException
      */
     public byte[] compress(String value) throws IOException {
+        return compress(value, defaultCharset);
+    }
+
+    /**
+     *
+     * @param notCompressedStr
+     * @return
+     * @throws IOException
+     */
+    public String decompress(byte[] notCompressedStr) throws IOException {
+        return decompress(notCompressedStr, defaultCharset);
+    }
+
+    /**
+     *
+     * @param notCompressedStr
+     * @param charset
+     * @return
+     * @throws IOException
+     */
+    @Override
+    public byte[] compress(String notCompressedStr, Charset charset) throws IOException {
         LzoCompressor compressor = LzoLibrary.getInstance().newCompressor(null, null);
-        byte[] row_data = value.getBytes(this.charset);
+        byte[] row_data = notCompressedStr.getBytes(charset);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         LzopOutputStream lzopOutputStream = new LzopOutputStream(
@@ -75,12 +85,15 @@ public class Lzo implements CompressAlgorithm {
     }
 
     /**
-     * @param value
+     *
+     * @param compressedByteArray
+     * @param charset
      * @return
      * @throws IOException
      */
-    public String decompress(byte[] value) throws IOException {
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(value);
+    @Override
+    public String decompress(byte[] compressedByteArray, Charset charset) throws IOException {
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressedByteArray);
         LzopInputStream lzopInputStream = new LzopInputStream(byteArrayInputStream);
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         int ir;
@@ -91,6 +104,6 @@ public class Lzo implements CompressAlgorithm {
         }
         buffer.flush();
 
-        return new String(buffer.toByteArray());
+        return new String(buffer.toByteArray(), charset);
     }
 }

@@ -2,9 +2,10 @@ package net.magicd.io.couchbase.compress;
 
 import lombok.Getter;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -26,22 +27,9 @@ public class Gzip implements CompressAlgorithm {
     private final String extensionStr = ".gz";
 
     /**
-     * charSetEncoding
-     */
-    private Charset charset = StandardCharsets.UTF_8;
-
-    /**
      * constructor
      */
-    public Gzip() {
-    }
-
-    /**
-     * constructor
-     */
-    public Gzip(Charset charset) {
-        this.charset = charset;
-    }
+    public Gzip() { }
 
     /**
      * compress String by gzip
@@ -51,15 +39,7 @@ public class Gzip implements CompressAlgorithm {
      */
     @Override
     public byte[] compress(String notCompressedStr) throws IOException {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
-
-        byte[] decompressedBytes = notCompressedStr.getBytes(this.charset);
-
-        gzipOutputStream.write(decompressedBytes, 0, decompressedBytes.length);
-        gzipOutputStream.close();
-
-        return byteArrayOutputStream.toByteArray();
+        return compress(notCompressedStr, defaultCharset);
     }
 
     /**
@@ -70,18 +50,50 @@ public class Gzip implements CompressAlgorithm {
      */
     @Override
     public String decompress(byte[] compressedByteArray) throws IOException {
+        return decompress(compressedByteArray, defaultCharset);
+    }
+
+    /**
+     *
+     * @param notCompressedStr
+     * @param charset
+     * @return
+     * @throws IOException
+     */
+    @Override
+    public byte[] compress(String notCompressedStr, Charset charset) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
+
+        byte[] decompressedBytes = notCompressedStr.getBytes(charset);
+
+        gzipOutputStream.write(decompressedBytes, 0, decompressedBytes.length);
+        gzipOutputStream.close();
+
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    /**
+     *
+     * @param compressedByteArray
+     * @param charset
+     * @return
+     * @throws IOException
+     */
+    @Override
+    public String decompress(byte[] compressedByteArray, Charset charset) throws IOException {
         GZIPInputStream gzipInputStream = new GZIPInputStream(
                 new ByteArrayInputStream(compressedByteArray)
         );
-        OutputStream out = new ByteArrayOutputStream();
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         byte[] buf = new byte[16384];
         int len;
         while ((len = gzipInputStream.read(buf)) > 0) {
-            out.write(buf, 0, len);
+            buffer.write(buf, 0, len);
         }
         gzipInputStream.close();
-        out.close();
+        buffer.close();
 
-        return out.toString();
+        return new String(buffer.toByteArray(), charset);
     }
 }

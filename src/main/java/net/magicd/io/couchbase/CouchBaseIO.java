@@ -2,7 +2,10 @@ package net.magicd.io.couchbase;
 
 import com.couchbase.client.CouchbaseClient;
 import lombok.Getter;
+import net.magicd.io.couchbase.compress.CompressAlgorithm;
+import net.magicd.io.couchbase.compress.Gzip;
 import net.magicd.io.couchbase.compress.Lzo;
+import net.magicd.io.couchbase.compress.NoCompress;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
@@ -10,9 +13,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -21,25 +22,37 @@ import java.util.concurrent.ExecutionException;
  * @author Hiroshi IKEGAMI \<hiroshi.ikegami@magicdrive.jp\>
  * @version 0.1
  */
-public class CouchBaseIO {
+public class CouchBaseIO extends CouchbaseClient {
 
     /**
      *
      */
     public enum CompressMode {
-        LZO, GZIP
+        LZO, GZIP, NONE
     }
 
     /**
-     * the couchbase client entity
+     *
      */
-    protected CouchbaseClient client;
+    @Getter
+    protected static final CompressMode defaultCompressMode = CompressMode.LZO;
+
+    /**
+     *
+     */
+    @Getter
+    protected CompressMode compressMode = null;
+
+    /**
+     *
+     */
+    protected CompressAlgorithm algorithm = null;
 
     /**
      * well shutdown?
      */
     @Getter
-    private boolean hasBeenShutDown = false;
+    protected boolean hasBeenShutDown = false;
 
     /**
      * couchbase bucketName
@@ -48,14 +61,28 @@ public class CouchBaseIO {
     protected String bucketName;
 
     /**
+     * @return
+     */
+    public String getCompressAlgorithmName() {
+        return algorithm.getAlgorithmName();
+    }
+
+    /**
+     * @return
+     */
+    public String getCompressExtensionStr() {
+        return algorithm.getExtensionStr();
+    }
+
+
+    /**
      * constructor.
      *
      * @throws IOException
      */
-    public CouchBaseIO(URI endpoint, String bucket, String password)
-            throws IOException {
-        List<URI> couchBaseEndPoints = Arrays.asList(endpoint);
-        this.client = new CouchbaseClient(couchBaseEndPoints, bucket, password);
+    public CouchBaseIO(URI endpoint, String bucketName, String password) throws IOException {
+        super(Arrays.asList(endpoint), bucketName, password);
+        setupCompressAlgorithm(defaultCompressMode);
     }
 
     /**
@@ -63,10 +90,9 @@ public class CouchBaseIO {
      *
      * @throws IOException
      */
-    public CouchBaseIO(URI[] endpoints, String bucket, String password)
-            throws IOException {
-        List<URI> couchBaseEndPoints = Arrays.asList(endpoints);
-        this.client = new CouchbaseClient(couchBaseEndPoints, bucket, password);
+    public CouchBaseIO(URI[] endpoints, String bucketName, String password) throws IOException {
+        super(Arrays.asList(endpoints), bucketName, password);
+        setupCompressAlgorithm(defaultCompressMode);
     }
 
     /**
@@ -74,34 +100,59 @@ public class CouchBaseIO {
      *
      * @throws IOException
      */
-    public CouchBaseIO(String endpoint, String bucket, String password)
-            throws IOException {
-        List<URI> couchBaseEndPoints;
-        try {
-            couchBaseEndPoints = Arrays.asList(new URI(endpoint));
-        } catch (URISyntaxException e) {
-            throw new IOException(e);
+    public CouchBaseIO(String endpoint, String bucket, String password) throws IOException, URISyntaxException {
+        super(Arrays.asList(new URI(endpoint)), bucket, password);
+        setupCompressAlgorithm(defaultCompressMode);
+    }
+
+    /**
+     * constructor.
+     *
+     * @throws IOException
+     */
+    public CouchBaseIO(URI endpoint, String bucketName, String password, CompressMode compressMode) throws IOException {
+        super(Arrays.asList(endpoint), bucketName, password);
+        setupCompressAlgorithm(compressMode);
+    }
+
+    /**
+     * constructor.
+     *
+     * @throws IOException
+     */
+    public CouchBaseIO(URI[] endpoints, String bucketName, String password, CompressMode compressMode) throws IOException {
+        super(Arrays.asList(endpoints), bucketName, password);
+        setupCompressAlgorithm(compressMode);
+    }
+
+    /**
+     * constructor.
+     *
+     * @throws IOException
+     */
+    public CouchBaseIO(String endpoint, String bucket, String password, CompressMode compressMode) throws IOException, URISyntaxException {
+        super(Arrays.asList(new URI(endpoint)), bucket, password);
+        setupCompressAlgorithm(compressMode);
+    }
+
+    /**
+     * @param compressMode
+     */
+    protected void setupCompressAlgorithm(CompressMode compressMode) {
+        this.compressMode = compressMode;
+        switch (compressMode) {
+            case GZIP:
+                algorithm = new Gzip();
+                break;
+            case LZO:
+                algorithm = new Lzo();
+                break;
+            case NONE:
+                algorithm = new NoCompress();
+                break;
         }
-        this.client = new CouchbaseClient(couchBaseEndPoints, bucket, password);
     }
 
-    /**
-     * constructor.
-     *
-     * @throws IOException
-     */
-    public CouchBaseIO(List<String> endpoints, String bucket, String password)
-            throws IOException {
-        List<URI> couchBaseEndPoints = new ArrayList<>();
-        try {
-            for (String endpoint : endpoints) {
-                couchBaseEndPoints.add(new URI(endpoint));
-            }
-        } catch (URISyntaxException e) {
-            throw new IOException(e);
-        }
-        this.client = new CouchbaseClient(couchBaseEndPoints, bucket, password);
-    }
 
     /**
      * destructor
@@ -114,7 +165,7 @@ public class CouchBaseIO {
             super.finalize();
         } finally {
             if (!isHasBeenShutDown()) {
-                shutdown();
+                this.shutdown();
             }
         }
     }
@@ -123,9 +174,19 @@ public class CouchBaseIO {
      * shutdown client
      */
     public void shutdown() {
-        client.shutdown();
+        super.shutdown();
         this.hasBeenShutDown = true;
     }
+
+    /**
+     * Put java.lang.Object instance into couchbase.
+     *
+     * @param key
+     */
+    public <T> boolean put(String key, T pojoInstance) throws IOException {
+        return put(key, StandardCharsets.UTF_8, pojoInstance);
+    }
+
 
     /**
      * Put java.lang.Object instance into couchbase.
@@ -135,21 +196,12 @@ public class CouchBaseIO {
     public <T> boolean put(String key, Charset charset, T pojoInstance) throws IOException {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            return client.set(
-                    convertKey(key), new Lzo(charset).compress(mapper.writeValueAsString(pojoInstance))
+            return set(
+                    convertKey(key), algorithm.compress(mapper.writeValueAsString(pojoInstance), charset)
             ).get();
         } catch (InterruptedException | ExecutionException e) {
             throw new IOException(e);
         }
-    }
-
-    /**
-     * Put java.lang.Object instance into couchbase.
-     *
-     * @param key
-     */
-    public <T> boolean put(String key, T pojoInstance) throws IOException {
-        return  put(key, StandardCharsets.UTF_8, pojoInstance);
     }
 
     /**
@@ -168,8 +220,8 @@ public class CouchBaseIO {
      * @param <T>
      * @return ArrayList<(POJO class)>
      */
-    public <T> T get(String key, Charset charSet, Class<T> klazz) throws IOException {
-        String value = new Lzo(charSet).decompress((byte[]) client.get(convertKey(key)));
+    public <T> T get(String key, Charset charset, Class<T> klazz) throws IOException {
+        String value = algorithm.decompress((byte[]) get(convertKey(key)), charset);
         ObjectMapper mapper = new ObjectMapper();
         T data = mapper.readValue(value, klazz);
         return data;
@@ -179,9 +231,8 @@ public class CouchBaseIO {
      * @param key
      * @return
      */
-    private static String convertKey(String key) {
-        return key + new Lzo().getExtensionStr();
+    private String convertKey(String key) {
+        return key + getCompressExtensionStr();
     }
-
 }
 
