@@ -6,25 +6,33 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 /**
+ * no compress algorithm class
  *
+ * don't compress and decompress, but String <-> byteArray convert.
+ *
+ *
+ * @author Hiroshi IKEGAMI \<hiroshi.ikegami@magicdrive.jp\>
  */
 public class NoCompress implements CompressAlgorithm {
 
     /**
-     *
+     * algorithm name
      */
     @Getter
     private String algorithmName = "nocompress";
 
     /**
+     * extensin string
      *
      */
     @Getter
     private String extensionStr = "";
 
     /**
+     * don't compress, return String#getBytes
+     *
      * @param notCompressedStr
-     * @return
+     * @return byte[]
      * @throws IOException
      */
     @Override
@@ -33,8 +41,10 @@ public class NoCompress implements CompressAlgorithm {
     }
 
     /**
+     * don't decompress, return new String(byte[])
+     *
      * @param compressedByteArray
-     * @return
+     * @return String
      * @throws IOException
      */
     @Override
@@ -43,9 +53,11 @@ public class NoCompress implements CompressAlgorithm {
     }
 
     /**
+     * don't compress, return String#getBytes
+     *
      * @param notCompressedStr
      * @param charset
-     * @return
+     * @return byte[]
      * @throws IOException
      */
     @Override
@@ -54,9 +66,11 @@ public class NoCompress implements CompressAlgorithm {
     }
 
     /**
+     * don't decompress, return new String(byte[])
+     *
      * @param compressedByteArray
      * @param charset
-     * @return
+     * @return String
      * @throws IOException
      */
     @Override

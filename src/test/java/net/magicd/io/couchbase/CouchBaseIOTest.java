@@ -16,10 +16,23 @@ import static net.magicd.io.couchbase.CouchBaseIO.CompressMode;
 import static net.magicd.io.couchbase.CouchBaseIO.CompressMode.*;
 import static org.junit.Assert.assertEquals;
 
+/**
+ * CouchbaseIO Test class
+ *
+ * @author Hiroshi IKEGAMI - hiroshi.ikegami at magicdrive.jp
+ * @see net.magicd.io.couchbase.CouchBaseIO
+ */
 public class CouchBaseIOTest {
 
+    /**
+     * couchbase endpoint config file.
+     */
     private static final String filename = "couchbase.yaml";
 
+    /**
+     * debug print method.
+     * @param objs
+     */
     private static void p(Object[] objs) {
         for (Object obj : objs) {
             System.err.println(obj.toString());
@@ -27,7 +40,10 @@ public class CouchBaseIOTest {
     }
 
     /**
+     * get couchBaseServerURL from filename defined CouchbaseIOTest#filename field.
+     *
      * @return couchBaseServerURL
+     * @see net.magicd.io.couchbase.CouchBaseIOTest#filename
      */
     public String getCouchBaseServerURL() {
         try {
@@ -57,6 +73,7 @@ public class CouchBaseIOTest {
 
 
     /**
+     * put and get test utility.
      *
      * @param io
      */
@@ -83,6 +100,8 @@ public class CouchBaseIOTest {
 
 
     /**
+     * get method test: compress algorithm is default .
+     *
      * @throws IOException
      */
     @Test
@@ -94,11 +113,13 @@ public class CouchBaseIOTest {
             execTestGet(new CouchBaseIO(serverUrl, bucket, passwd));
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
-            throw new RuntimeException("specified url not available.", e);
+            throw new RuntimeException("specified url is not available.", e);
         }
     }
 
     /**
+     * get method test: args in compress mode.
+     *
      * @throws IOException
      */
     @Test
@@ -112,27 +133,27 @@ public class CouchBaseIOTest {
             }
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
-            throw new RuntimeException("specified url not available.", e);
+            throw new RuntimeException("specified url is not available.", e);
         }
     }
 
     /**
-     *
+     * shutdown test.
      */
     @Test
-    public void testShutdown() {
+    public void shutdownTest() {
         try {
             CouchBaseIO io = new CouchBaseIO(getCouchBaseServerURL(), "default", "");
             io.shutdown();
             assertEquals(io.isHasBeenShutDown(), true);
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
-            throw new RuntimeException("specified url not available.", e);
+            throw new RuntimeException("specified url is not available.", e);
         }
     }
 
     /**
-     *
+     * constructor test.
      */
     @Test
     public void constructorTest() {
@@ -140,14 +161,14 @@ public class CouchBaseIOTest {
                 bucket = "default",
                 passwd = "";
         try {
-            for (CouchBaseIO v : new CouchBaseIO[]{
+            for (CouchBaseIO couchbase : new CouchBaseIO[]{
                     new CouchBaseIO(serverUrl, bucket, passwd),
                     new CouchBaseIO(new URI(serverUrl), bucket, passwd),
                     new CouchBaseIO(new URI[]{new URI(serverUrl)}, bucket, passwd)
             }) {
-                assertEquals(v.isHasBeenShutDown(), false);
-                v.shutdown();
-                assertEquals(v.isHasBeenShutDown(), true);
+                assertEquals(couchbase.isHasBeenShutDown(), false);
+                couchbase.shutdown();
+                assertEquals(couchbase.isHasBeenShutDown(), true);
             }
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();

@@ -19,32 +19,31 @@ import java.util.concurrent.ExecutionException;
 /**
  * A CouchBaseClient Wrapper.
  *
- * @author Hiroshi IKEGAMI \<hiroshi.ikegami@magicdrive.jp\>
- * @version 0.1
+ * @author Hiroshi IKEGAMI - hiroshi.ikegami at magicdrive.jp
  */
 public class CouchBaseIO extends CouchbaseClient {
 
     /**
-     *
+     * enum: compress mode
      */
     public enum CompressMode {
         LZO, GZIP, NONE
     }
 
     /**
-     *
+     * default compress mode (lzo)
      */
     @Getter
     protected static final CompressMode defaultCompressMode = CompressMode.LZO;
 
     /**
-     *
+     * current compress mode.
      */
     @Getter
     protected CompressMode compressMode = null;
 
     /**
-     *
+     * algorithm class instance.
      */
     protected CompressAlgorithm algorithm = null;
 
@@ -61,14 +60,20 @@ public class CouchBaseIO extends CouchbaseClient {
     protected String bucketName;
 
     /**
-     * @return
+     * current algorithm name getter.
+     *
+     * @return algorithmName
+     * @see net.magicd.io.couchbase.compress.CompressAlgorithm#getAlgorithmName()
      */
     public String getCompressAlgorithmName() {
         return algorithm.getAlgorithmName();
     }
 
     /**
-     * @return
+     * current algorithm name getter.
+     *
+     * @return extensionStr
+     * @see net.magicd.io.couchbase.compress.CompressAlgorithm#getExtensionStr()
      */
     public String getCompressExtensionStr() {
         return algorithm.getExtensionStr();
@@ -78,6 +83,9 @@ public class CouchBaseIO extends CouchbaseClient {
     /**
      * constructor.
      *
+     * @param endpoint
+     * @param bucketName
+     * @param password
      * @throws IOException
      */
     public CouchBaseIO(URI endpoint, String bucketName, String password) throws IOException {
@@ -88,6 +96,9 @@ public class CouchBaseIO extends CouchbaseClient {
     /**
      * constructor.
      *
+     * @param endpoints
+     * @param bucketName
+     * @param password
      * @throws IOException
      */
     public CouchBaseIO(URI[] endpoints, String bucketName, String password) throws IOException {
@@ -98,7 +109,11 @@ public class CouchBaseIO extends CouchbaseClient {
     /**
      * constructor.
      *
+     * @param endpoint
+     * @param bucket
+     * @param password
      * @throws IOException
+     * @throws URISyntaxException
      */
     public CouchBaseIO(String endpoint, String bucket, String password) throws IOException, URISyntaxException {
         super(Arrays.asList(new URI(endpoint)), bucket, password);
@@ -108,6 +123,10 @@ public class CouchBaseIO extends CouchbaseClient {
     /**
      * constructor.
      *
+     * @param endpoint
+     * @param bucketName
+     * @param password
+     * @param compressMode
      * @throws IOException
      */
     public CouchBaseIO(URI endpoint, String bucketName, String password, CompressMode compressMode) throws IOException {
@@ -118,6 +137,10 @@ public class CouchBaseIO extends CouchbaseClient {
     /**
      * constructor.
      *
+     * @param endpoints
+     * @param bucketName
+     * @param password
+     * @param compressMode
      * @throws IOException
      */
     public CouchBaseIO(URI[] endpoints, String bucketName, String password, CompressMode compressMode) throws IOException {
@@ -128,7 +151,12 @@ public class CouchBaseIO extends CouchbaseClient {
     /**
      * constructor.
      *
+     * @param endpoint
+     * @param bucket
+     * @param password
+     * @param compressMode
      * @throws IOException
+     * @throws URISyntaxException
      */
     public CouchBaseIO(String endpoint, String bucket, String password, CompressMode compressMode) throws IOException, URISyntaxException {
         super(Arrays.asList(new URI(endpoint)), bucket, password);
@@ -136,19 +164,21 @@ public class CouchBaseIO extends CouchbaseClient {
     }
 
     /**
+     * setup to CouchbaseIO#algorithm via compressMode arg.
+     *
      * @param compressMode
      */
     protected void setupCompressAlgorithm(CompressMode compressMode) {
         this.compressMode = compressMode;
         switch (compressMode) {
             case GZIP:
-                algorithm = new Gzip();
+                this.algorithm = new Gzip();
                 break;
             case LZO:
-                algorithm = new Lzo();
+                this.algorithm = new Lzo();
                 break;
             case NONE:
-                algorithm = new NoCompress();
+                this.algorithm = new NoCompress();
                 break;
         }
     }
@@ -179,9 +209,13 @@ public class CouchBaseIO extends CouchbaseClient {
     }
 
     /**
-     * Put java.lang.Object instance into couchbase.
+     * Put POJO instance into couchbase.
      *
      * @param key
+     * @param key
+     * @param pojoInstance
+     * @param <T>
+     * @return result
      */
     public <T> boolean put(String key, T pojoInstance) throws IOException {
         return put(key, StandardCharsets.UTF_8, pojoInstance);
@@ -189,9 +223,13 @@ public class CouchBaseIO extends CouchbaseClient {
 
 
     /**
-     * Put java.lang.Object instance into couchbase.
+     * Put POJO instance into couchbase.
      *
      * @param key
+     * @param charset
+     * @param pojoInstance
+     * @param <T>
+     * @return result
      */
     public <T> boolean put(String key, Charset charset, T pojoInstance) throws IOException {
         try {
@@ -205,6 +243,8 @@ public class CouchBaseIO extends CouchbaseClient {
     }
 
     /**
+     * Get data via Couchbase, and mount on <T>klazz POJO instance.
+     *
      * @param key
      * @param klazz
      * @param <T>
@@ -215,7 +255,10 @@ public class CouchBaseIO extends CouchbaseClient {
     }
 
     /**
+     * Get data via Couchbase, and mount on <T>klazz POJO instance.
+     *
      * @param key
+     * @param charset
      * @param klazz
      * @param <T>
      * @return ArrayList<(POJO class)>
@@ -228,8 +271,10 @@ public class CouchBaseIO extends CouchbaseClient {
     }
 
     /**
+     * key convert to couchbase real key.(binding compress-type)
+     *
      * @param key
-     * @return
+     * @return convertedKey
      */
     private String convertKey(String key) {
         return key + getCompressExtensionStr();

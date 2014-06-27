@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 /**
- * LZO compressor
+ * Lzo compressor
  *
  * @author Hiroshi IKEGAMI \<hiroshi.ikegami@magicdrive.jp\>
  */
@@ -107,3 +107,4 @@ public class Lzo implements CompressAlgorithm {
         return new String(buffer.toByteArray(), charset);
     }
 }
+
