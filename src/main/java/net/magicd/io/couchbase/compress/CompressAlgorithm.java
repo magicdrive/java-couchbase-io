@@ -5,11 +5,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
- * compress utility interface.
+ * compress algorithm classes interface.
  *
- *
- * @author Hiroshi IKEGAMI \<hiroshi.ikegami@magicdrive.jp\>
- *
+ * @author Hiroshi IKEGAMI - hiroshi.ikegami at magicdrive.jp
  */
 public interface CompressAlgorithm {
 
@@ -19,6 +17,7 @@ public interface CompressAlgorithm {
     public static final Charset defaultCharset = StandardCharsets.UTF_8;
 
     /**
+     * compress String to byte[]
      *
      * @param notCompressedStr
      * @return compressedByteArray
@@ -26,6 +25,7 @@ public interface CompressAlgorithm {
     public byte[] compress(String notCompressedStr) throws IOException;
 
     /**
+     * decompress compressedByteArray to String
      *
      * @param compressedByteArray
      * @return decompressedStr
@@ -33,6 +33,7 @@ public interface CompressAlgorithm {
     public String decompress(byte[] compressedByteArray) throws IOException;
 
     /**
+     * compress String to byte[]
      *
      * @param notCompressedStr
      * @return compressedByteArray
@@ -40,6 +41,7 @@ public interface CompressAlgorithm {
     public byte[] compress(String notCompressedStr, Charset charset) throws IOException;
 
     /**
+     * decompress compressedByteArray to String
      *
      * @param compressedByteArray
      * @return decompressedStr
@@ -47,12 +49,14 @@ public interface CompressAlgorithm {
     public String decompress(byte[] compressedByteArray, Charset charset) throws IOException;
 
     /**
+     * getter algorithmName
      *
      * @return
      */
     public String getAlgorithmName();
 
     /**
+     * getter extensionStr
      *
      * @return
      */

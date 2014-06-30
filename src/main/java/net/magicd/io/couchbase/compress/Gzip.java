@@ -27,12 +27,7 @@ public class Gzip implements CompressAlgorithm {
     private final String extensionStr = ".gz";
 
     /**
-     * constructor
-     */
-    public Gzip() { }
-
-    /**
-     * compress String by gzip
+     * compress String with gzip format.
      *
      * @param notCompressedStr
      * @return compressedGzipString
@@ -43,7 +38,7 @@ public class Gzip implements CompressAlgorithm {
     }
 
     /**
-     * decompress gzipString
+     * decompress gzipedByteArray.
      *
      * @param compressedByteArray
      * @return decompressedGzipString
@@ -54,6 +49,7 @@ public class Gzip implements CompressAlgorithm {
     }
 
     /**
+     * compress String with gzip format.
      *
      * @param notCompressedStr
      * @param charset
@@ -74,6 +70,7 @@ public class Gzip implements CompressAlgorithm {
     }
 
     /**
+     * decompress gzipedByteArray.
      *
      * @param compressedByteArray
      * @param charset

@@ -27,7 +27,7 @@ public class CouchBaseIO extends CouchbaseClient {
      * enum: compress mode
      */
     public enum CompressMode {
-        LZO, GZIP, NONE
+        LZO, GZIP, NOCOMPRESS
     }
 
     /**
@@ -177,7 +177,7 @@ public class CouchBaseIO extends CouchbaseClient {
             case LZO:
                 this.algorithm = new Lzo();
                 break;
-            case NONE:
+            case NOCOMPRESS:
                 this.algorithm = new NoCompress();
                 break;
         }

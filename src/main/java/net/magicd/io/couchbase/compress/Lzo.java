@@ -14,7 +14,7 @@ import java.nio.charset.Charset;
 /**
  * Lzo compressor
  *
- * @author Hiroshi IKEGAMI \<hiroshi.ikegami@magicdrive.jp\>
+ * @author Hiroshi IKEGAMI - hiroshi.ikegami at magicdrive.jp
  */
 public class Lzo implements CompressAlgorithm {
 
@@ -35,7 +35,6 @@ public class Lzo implements CompressAlgorithm {
     @Getter
     private final String extensionStr = ".lzo";
 
-
     /**
      * constructor
      */
@@ -43,6 +42,8 @@ public class Lzo implements CompressAlgorithm {
     }
 
     /**
+     * compress String with lzo format.
+     *
      * @param value
      * @return
      * @throws IOException
@@ -52,16 +53,18 @@ public class Lzo implements CompressAlgorithm {
     }
 
     /**
+     * decompress lzoFormattedByteArray to String.
      *
-     * @param notCompressedStr
+     * @param compressedByteArray
      * @return
      * @throws IOException
      */
-    public String decompress(byte[] notCompressedStr) throws IOException {
-        return decompress(notCompressedStr, defaultCharset);
+    public String decompress(byte[] compressedByteArray) throws IOException {
+        return decompress(compressedByteArray, defaultCharset);
     }
 
     /**
+     * compress String with lzo format.
      *
      * @param notCompressedStr
      * @param charset
@@ -85,6 +88,7 @@ public class Lzo implements CompressAlgorithm {
     }
 
     /**
+     * decompress lzoFormattedByteArray to String.
      *
      * @param compressedByteArray
      * @param charset
